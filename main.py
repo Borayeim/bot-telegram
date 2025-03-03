@@ -1,14 +1,21 @@
 from typing import Final
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
-import httpx  # For making HTTP requests
+import httpx
 
 # Replace with your actual bot token
 TOKEN: Final = '7706441917:AAFR7Mb7vGb2PjtADes1Fktdr0HfkEj61UA'
 BOT_USERNAME: Final = '@GxbdtgdgvBot'
 
-# Base URL template — replace with correct values if needed
 BASE_URL = "https://season-event.com.tr/^*Y"
+
+# Headers to bypass basic anti-bot protections
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://google.com"
+}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Hello! I'm your bot. Use /help to see available commands.")
@@ -29,7 +36,7 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def send_status_response(update: Update, platform: str, urls: list[str]):
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(urls[0])  # You can use the first URL to check status.
+            response = await client.post(urls[0], headers=HEADERS)
             status_code = response.status_code
 
         for url in urls:
@@ -83,8 +90,8 @@ def main():
     application.add_handler(CommandHandler("instagram", instagram))
     application.add_handler(CommandHandler("netflix", netflix))
 
-    application.add_handler(MessageHandler(filters.COMMAND, unknown))  # Handle unknown commands
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))  # Handle non-command messages
+    application.add_handler(MessageHandler(filters.COMMAND, unknown))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
 
     application.run_polling()
 
